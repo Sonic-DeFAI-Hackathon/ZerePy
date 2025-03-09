@@ -1,0 +1,22 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y curl && apt-get clean
+
+# Install required packages
+RUN pip install --no-cache-dir uvicorn==0.29.0 fastapi==0.112.1 pydantic==2.6.4 python-dotenv==1.0.1
+
+# Copy only what we need
+COPY src/standalone_api.py /app/src/
+COPY docker-entrypoint.sh /app/
+
+# Make script executable
+RUN chmod +x /app/docker-entrypoint.sh
+
+# Expose the FastAPI port
+EXPOSE 8000
+
+# Run the FastAPI server
+CMD ["/app/docker-entrypoint.sh"]

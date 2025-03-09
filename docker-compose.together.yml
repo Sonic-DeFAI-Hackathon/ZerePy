@@ -1,0 +1,21 @@
+services:
+  zerepy-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.together
+      args:
+        - TOGETHER_API_KEY=${TOGETHER_API_KEY}
+        - TOGETHER_MODEL=${TOGETHER_MODEL:-meta-llama/Llama-3-70b-chat-hf}
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TOGETHER_API_KEY=${TOGETHER_API_KEY}
+      - TOGETHER_MODEL=${TOGETHER_MODEL:-meta-llama/Llama-3-70b-chat-hf}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped

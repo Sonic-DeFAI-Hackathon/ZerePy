@@ -1,0 +1,34 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Accept build arguments for Together API key and model
+ARG TOGETHER_API_KEY
+ARG TOGETHER_MODEL=meta-llama/Llama-3-70b-chat-hf
+
+# Set environment variables
+ENV TOGETHER_API_KEY=$TOGETHER_API_KEY
+ENV TOGETHER_MODEL=$TOGETHER_MODEL
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y curl && apt-get clean
+
+# Install required packages
+RUN pip install --no-cache-dir uvicorn==0.29.0 fastapi==0.112.1 pydantic==2.6.4 \
+    python-dotenv==1.0.1 requests==2.31.0
+
+# Copy API implementation and entrypoint
+COPY src/together_api.py /app/src/
+COPY together-entrypoint.sh /app/
+
+# Make script executable
+RUN chmod +x /app/together-entrypoint.sh
+
+# Create directory for configuration
+RUN mkdir -p /app/agents
+
+# Expose the FastAPI port
+EXPOSE 8000
+
+# Run the FastAPI server
+CMD ["/app/together-entrypoint.sh"]
