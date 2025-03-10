@@ -1,32 +1,16 @@
 SONIC_NETWORKS = {
-    "mainnet": {
-        "rpc_url": "https://rpc.soniclabs.com",
-        "scanner_url": "https://sonicscan.org"
-    },
-    "testnet": {
+    "sonic_blaze_testnet": {
         "rpc_url": "https://rpc.blaze.soniclabs.com",
-        "scanner_url": "https://testnet.sonicscan.org"
-    },
-    "custom": {
-        "rpc_url": "placeholder",
-        "scanner_url": "https://sonicscan.org"
+        "scanner_url": "https://testnet.sonicscan.org",
+        "chain_id": 57054,
+        "name": "Sonic Blaze Testnet",
+        "native_currency": {
+            "name": "Sonic",
+            "symbol": "SONIC",
+            "decimals": 18
         }
     }
-
-EVM_NETWORKS = {
-    "ethereum": {
-        "rpc_url": "https://ethereum-rpc.publicnode.com",
-        "scanner_url": "etherscan.io",
-        "chain_id": 1
-    },
-    "base": {
-        "rpc_url": "https://mainnet.base.org",
-        "scanner_url": "basescan.org",
-        "chain_id": 8453
-    },
-    "polygon": {
-        "rpc_url": "https://polygon-rpc.com",
-        "scanner_url": "polygonscan.com",
-        "chain_id": 137
-    }
 }
+
+# Only support Sonic Blaze Testnet
+EVM_NETWORKS = {}

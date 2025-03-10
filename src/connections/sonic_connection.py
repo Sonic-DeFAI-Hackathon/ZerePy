@@ -23,14 +23,12 @@ class SonicConnection(BaseConnection):
         logger.info("Initializing Sonic connection...")
         self._web3 = None
         
-        # Get network configuration
-        network = config.get("network", "mainnet")
-        if network not in SONIC_NETWORKS:
-            raise ValueError(f"Invalid network '{network}'. Must be one of: {', '.join(SONIC_NETWORKS.keys())}")
-            
+        # Only use Sonic Blaze Testnet
+        network = "sonic_blaze_testnet"
         network_config = SONIC_NETWORKS[network]
         self.explorer = network_config["scanner_url"]
         self.rpc_url = network_config["rpc_url"]
+        self.chain_id = network_config.get("chain_id")
         
         super().__init__(config)
         self._initialize_web3()
@@ -62,14 +60,8 @@ class SonicConnection(BaseConnection):
 
     def validate_config(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """Validate Sonic configuration from JSON"""
-        required = ["network"]
-        missing = [field for field in required if field not in config]
-        if missing:
-            raise ValueError(f"Missing config fields: {', '.join(missing)}")
-        
-        if config["network"] not in SONIC_NETWORKS:
-            raise ValueError(f"Invalid network '{config['network']}'. Must be one of: {', '.join(SONIC_NETWORKS.keys())}")
-            
+        # Always enforce Sonic Blaze Testnet
+        config["network"] = "sonic_blaze_testnet"
         return config
 
     def get_token_by_ticker(self, ticker: str) -> Optional[str]:

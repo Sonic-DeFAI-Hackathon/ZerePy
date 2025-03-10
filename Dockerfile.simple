@@ -1,0 +1,12 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir fastapi==0.112.1 uvicorn==0.29.0 python-dotenv==1.0.1 requests==2.31.0
+
+COPY src/simple_together.py /app/src/
+COPY .env /app/
+
+EXPOSE 8000
+
+CMD ["python", "-m", "uvicorn", "src.simple_together:app", "--host", "0.0.0.0", "--port", "8000"]

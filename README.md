@@ -1,430 +1,202 @@
-# ZerePy
+# ZerePy with Together AI Integration for Baultro
 
-ZerePy is an open-source Python framework designed to let you deploy your own agents on X, powered by multiple LLMs.
+This document describes how to set up and use the ZerePy integration with Together AI for the Baultro gaming platform.
 
-ZerePy is built from a modularized version of the Zerebro backend. With ZerePy, you can launch your own agent with
-similar core functionality as Zerebro. For creative outputs, you'll need to fine-tune your own model.
+## Overview
 
-## Features
+This integration provides a FastAPI server that connects to the Together AI API, allowing Baultro to use Together AI's powerful language models for its AI-powered gameplay features.
 
-### Core Platform
+## Setup Instructions 
 
-- CLI interface for managing agents
-- Modular connection system
-- Blockchain integration
+### 1. Prerequisites
 
-### Onchain Activity
+- Docker and Docker Compose installed
+- Together AI API key (get one from https://www.together.ai/)
 
-- Solana
-- Ethereum
-- GOAT (Great Onchain Agent Toolkit)
-- Monad
+### 2. Configuration
 
-### Social Platform Integrations
+1. Create or edit the `.env` file in the ZerePy directory:
 
-- Twitter/X
-- Farcaster
-- Echochambers
+   ```
+   # Together AI API key
+   TOGETHER_API_KEY=your_together_api_key_here
+   # Together AI model to use
+   TOGETHER_MODEL=meta-llama/Llama-3-70b-chat-hf
+   ```
 
-### Language Model Support
+   Replace `your_together_api_key_here` with your actual Together AI API key.
 
-- OpenAI
-- Anthropic
-- EternalAI
-- Ollama
-- Hyperbolic
-- Galadriel
-- XAI (Grok)
+2. You can optionally change the model by modifying the `TOGETHER_MODEL` variable. Available options include:
+   - `meta-llama/Llama-3-70b-chat-hf` (default)
+   - `meta-llama/Llama-3-8b-chat-hf`
+   - `mistralai/Mixtral-8x7B-Instruct-v0.1`
+   - `togethercomputer/StripedHyena-Nous-7B`
+   - And many more available on Together AI
 
-## Quickstart
+### 3. Starting the API Server
 
-The quickest way to start using ZerePy is to use our Replit template:
-
-https://replit.com/@blormdev/ZerePy?v=1
-
-1. Fork the template (you will need you own Replit account)
-2. Click the run button on top
-3. Voila! your CLI should be ready to use, you can jump to the configuration section
-
-## Requirements
-
-System:
-
-- Python 3.10 or higher
-- Poetry 1.5 or higher
-
-Environment Variables:
-
-- LLM: make an account and grab an API key (at least one)
-  - OpenAI: https://platform.openai.com/api-keys
-  - Anthropic: https://console.anthropic.com/account/keys
-  - EternalAI: https://eternalai.oerg/api
-  - Hyperbolic: https://app.hyperbolic.xyz
-  - Galadriel: https://dashboard.galadriel.com
-- Social (based on your needs):
-  - X API: https://developer.x.com/en/docs/authentication/oauth-1-0a/api-key-and-secret
-  - Farcaster: Warpcast recovery phrase
-  - Echochambers: API key and endpoint
-- On-chain Integration:
-  - Solana: private key
-  - Ethereum: private keys
-  - Monad: private key
-
-## Installation
-
-1. First, install Poetry for dependency management if you haven't already:
-
-Follow the steps here to use the official installation: https://python-poetry.org/docs/#installing-with-the-official-installer
-
-2. Clone the repository:
+You can start the server using the provided script:
 
 ```bash
-git clone https://github.com/blorm-network/ZerePy.git
+./start-together-api.sh
 ```
 
-3. Go to the `zerepy` directory:
+This will:
+1. Check for the required configuration
+2. Build and start the Docker container
+3. Make the API available at http://localhost:8000
+
+Alternatively, you can use Docker Compose directly:
 
 ```bash
-cd zerepy
+docker-compose -f docker-compose.together.yml up -d
 ```
 
-4. Install dependencies:
+### 4. Verification
+
+You can verify that the API is working correctly by accessing:
+
+```
+http://localhost:8000/
+```
+
+You should see a JSON response with server status information.
+
+To test text generation, you can use curl:
 
 ```bash
-poetry install --no-root
+curl -X POST http://localhost:8000/generate \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"Hello, what is Baultro?", "temperature":0.7}'
 ```
 
-This will create a virtual environment and install all required dependencies.
+## API Endpoints
 
-## Usage
+The ZerePy API with Together AI integration provides the following endpoints:
 
-1. Activate the virtual environment:
+### 1. GET /
 
-```bash
-poetry shell
-```
+Returns server status information.
 
-2. Run the application:
+### 2. GET /providers
 
-```bash
-poetry run python main.py
-```
+Lists available LLM providers (Together AI).
 
-## Configure connections & launch an agent
+### 3. POST /generate
 
-1. Configure your desired connections:
+Generates text from a prompt.
 
-   ```
-   configure-connection twitter    # For Twitter/X integration
-   configure-connection openai     # For OpenAI
-   configure-connection anthropic  # For Anthropic
-   configure-connection farcaster  # For Farcaster
-   configure-connection eternalai  # For EternalAI
-   configure-connection solana     # For Solana
-   configure-connection goat       # For Goat
-   configure-connection galadriel  # For Galadriel
-   configure-connection ethereum   # For Ethereum
-   configure-connection discord    # For Discord
-   configure-connection ollama     # For Ollama
-   configure-connection xai        # For Grok
-   configure-connection allora     # For Allora
-   configure-connection hyperbolic # For Hyperbolic
-   ```
-
-2. Use `list-connections` to see all available connections and their status
-
-3. Load your agent (usually one is loaded by default, which can be set using the CLI or in agents/general.json):
-
-   ```
-   load-agent example
-   ```
-
-4. Start your agent:
-   ```
-   start
-   ```
-
-## GOAT Integration
-
-GOAT (Go Agent Tools) is a powerful plugin system that allows your agent to interact with various blockchain networks and protocols. Here's how to set it up:
-
-### Prerequisites
-
-1. An RPC provider URL (e.g., from Infura, Alchemy, or your own node)
-2. A wallet private key for signing transactions
-
-### Installation
-
-Install any of the additional [GOAT plugins](https://github.com/goat-sdk/goat/tree/main/python/src/plugins) you want to use:
-
-```bash
-poetry add goat-sdk-plugin-erc20         # For ERC20 token interactions
-poetry add goat-sdk-plugin-coingecko     # For price data
-```
-
-### Configuration
-
-1. Configure the GOAT connection using the CLI:
-
-   ```bash
-   configure-connection goat
-   ```
-
-   You'll be prompted to enter:
-
-   - RPC provider URL
-   - Wallet private key (will be stored securely in .env)
-
-2. Add GOAT plugins configuration to your agent's JSON file:
-
-   ```json
-   {
-     "name": "YourAgent",
-     "config": [
-       {
-         "name": "goat",
-         "plugins": [
-           {
-             "name": "erc20",
-             "args": {
-               "tokens": [
-                 "goat_plugins.erc20.token.PEPE",
-                 "goat_plugins.erc20.token.USDC"
-               ]
-             }
-           },
-           {
-             "name": "coingecko",
-             "args": {
-               "api_key": "YOUR_API_KEY"
-             }
-           }
-         ]
-       }
-     ]
-   }
-   ```
-
-Note that the order of plugins in the configuration doesn't matter, but each plugin must have a `name` and `args` field with the appropriate configuration options. You will have to check the documentation for each plugin to see what arguments are available.
-
-### Available Plugins
-
-Each [plugin](https://github.com/goat-sdk/goat/tree/main/python/src/plugins) provides specific functionality:
-
-- **1inch**: Interact with 1inch DEX aggregator for best swap rates
-- **allora**: Connect with Allora protocol
-- **coingecko**: Get real-time price data for cryptocurrencies using the CoinGecko API
-- **dexscreener**: Access DEX trading data and analytics
-- **erc20**: Interact with ERC20 tokens (transfer, approve, check balances)
-- **farcaster**: Interact with the Farcaster social protocol
-- **nansen**: Access Nansen's on-chain analytics
-- **opensea**: Interact with NFTs on OpenSea marketplace
-- **rugcheck**: Analyze token contracts for potential security risks
-- Many more to come...
-
-Note: While these plugins are available in the GOAT SDK, you'll need to install them separately using Poetry and configure them in your agent's JSON file. Each plugin may require its own API keys or additional setup.
-
-### Plugin Configuration
-
-Each plugin has its own configuration options that can be specified in the agent's JSON file:
-
-1. **ERC20 Plugin**:
-
-   ```json
-   {
-     "name": "erc20",
-     "args": {
-       "tokens": [
-         "goat_plugins.erc20.token.USDC",
-         "goat_plugins.erc20.token.PEPE",
-         "goat_plugins.erc20.token.DAI"
-       ]
-     }
-   }
-   ```
-
-2. **Coingecko Plugin**:
-   ```json
-   {
-     "name": "coingecko",
-     "args": {
-       "api_key": "YOUR_COINGECKO_API_KEY"
-     }
-   }
-   ```
-
-## Platform Features
-
-### GOAT
-
-- Interact with EVM chains through a unified interface
-- Manage ERC20 tokens:
-  - Check token balances
-  - Transfer tokens
-  - Approve token spending
-  - Get token metadata (decimals, symbol, name)
-- Access real-time cryptocurrency data:
-  - Get token prices
-  - Track market data
-  - Monitor price changes
-- Extensible plugin system for future protocols
-- Secure wallet management with private key storage
-- Multi-chain support through configurable RPC endpoints
-
-### Solana
-
-- Transfer SOL and SPL tokens
-- Swap tokens using Jupiter
-- Check token balances
-- Stake SOL
-- Monitor network TPS
-- Query token information
-- Request testnet/devnet funds
-
-### EVM Chains
-
-- Transfer ETH and ERC-20 Tokens
-- Swap tokens using Kyberswao
-- Check token balances
-
-### Twitter/X
-
-- Post tweets from prompts
-- Read timeline with configurable count
-- Reply to tweets in timeline
-- Like tweets in timeline
-
-### Farcaster
-
-- Post casts
-- Reply to casts
-- Like and requote casts
-- Read timeline
-- Get cast replies
-
-### Echochambers
-
-- Post new messages to rooms
-- Reply to messages based on room context
-- Read room history
-- Get room information and topics
-
-### Discord
-
-- List channels for a server
-- Read messages from a channel
-- Read mentioned messages from a channel
-- Post new messages to a channel
-- Reply to messages in a channel
-- React to a message in a channel
-
-## Create your own agent
-
-The secret to having a good output from the agent is to provide as much detail as possible in the configuration file. Craft a story and a context for the agent, and pick very good examples of tweets to include.
-
-If you want to take it a step further, you can fine tune your own model: https://platform.openai.com/docs/guides/fine-tuning.
-
-Create a new JSON file in the `agents` directory following this structure:
-
+**Request Body:**
 ```json
 {
-  "name": "ExampleAgent",
-  "bio": [
-    "You are ExampleAgent, the example agent created to showcase the capabilities of ZerePy.",
-    "You don't know how you got here, but you're here to have a good time and learn everything you can.",
-    "You are naturally curious, and ask a lot of questions."
-  ],
-  "traits": ["Curious", "Creative", "Innovative", "Funny"],
-  "examples": ["This is an example tweet.", "This is another example tweet."],
-  "example_accounts" : ["X_username_to_use_for_tweet_examples"]
-  "loop_delay": 900,
-  "config": [
-    {
-      "name": "twitter",
-      "timeline_read_count": 10,
-      "own_tweet_replies_count": 2,
-      "tweet_interval": 5400
-    },
-    {
-      "name": "farcaster",
-      "timeline_read_count": 10,
-      "cast_interval": 60
-    },
-    {
-      "name": "openai",
-      "model": "gpt-3.5-turbo"
-    },
-    {
-      "name": "anthropic",
-      "model": "claude-3-5-sonnet-20241022"
-    },
-    {
-      "name": "eternalai",
-      "model": "NousResearch/Hermes-3-Llama-3.1-70B-FP8",
-      "chain_id": "45762"
-    },
-    {
-      "name": "solana",
-      "rpc": "https://api.mainnet-beta.solana.com"
-    },
-    {
-      "name": "ollama",
-      "base_url": "http://localhost:11434",
-      "model": "llama3.2"
-    },
-    {
-      "name": "hyperbolic",
-      "model": "meta-llama/Meta-Llama-3-70B-Instruct"
-    },
-    {
-      "name": "galadriel",
-      "model": "gpt-3.5-turbo"
-    },
-    {
-      "name": "discord",
-      "message_read_count": 10,
-      "message_emoji_name": "❤️",
-      "server_id": "1234567890"
-    },
-    {
-      "name": "ethereum",
-      "rpc": "placeholder_url.123"
-    }
-
-  ],
-  "tasks": [
-    { "name": "post-tweet", "weight": 1 },
-    { "name": "reply-to-tweet", "weight": 1 },
-    { "name": "like-tweet", "weight": 1 }
-  ],
-  "use_time_based_weights": false,
-  "time_based_multipliers": {
-    "tweet_night_multiplier": 0.4,
-    "engagement_day_multiplier": 1.5
-  }
+  "prompt": "Your prompt text here",
+  "system_prompt": "Optional system instructions",
+  "model": "Optional model override",
+  "temperature": 0.7,
+  "max_tokens": 1024
 }
 ```
 
-## Available Commands
+### 4. POST /chat
 
-Use `help` in the CLI to see all available commands. Key commands include:
+Generates a response based on chat history.
 
-- `list-agents`: Show available agents
-- `load-agent`: Load a specific agent
-- `agent-loop`: Start autonomous behavior
-- `agent-action`: Execute single action
-- `list-connections`: Show available connections
-- `list-actions`: Show available actions for a connection
-- `configure-connection`: Set up a new connection
-- `chat`: Start interactive chat with agent
-- `clear`: Clear the terminal screen
+**Request Body:**
+```json
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hello, how are you?"
+    },
+    {
+      "role": "assistant",
+      "content": "I'm doing well, thank you for asking!"
+    },
+    {
+      "role": "user",
+      "content": "What is Baultro?"
+    }
+  ],
+  "system_prompt": "Optional system instructions",
+  "model": "Optional model override",
+  "temperature": 0.7,
+  "max_tokens": 1024
+}
+```
 
-## Star History
+### 5. POST /game/prompt
 
-[![Star History Chart](https://api.star-history.com/svg?repos=blorm-network/ZerePy&type=Date)](https://star-history.com/#blorm-network/ZerePy&Date)
+Generates a game-specific response for Baultro.
 
----
+**Request Body:**
+```json
+{
+  "prompt": "Your game-related prompt here",
+  "system_prompt": "love", // or "battle", "mystery", "raid"
+  "temperature": 0.7,
+  "max_tokens": 1024
+}
+```
 
-Made with ♥ [Blorm](https://Blorm.xyz)
+## Integration with Baultro
 
-Designed in California
+To integrate this API with Baultro, you'll need to:
+
+1. Make sure the API server is running
+2. Configure the ZerePy provider in Baultro to point to this API server
+3. Update your environment settings to use ZerePy with Together AI
+
+For detailed instructions on integrating with Baultro, see the main ZEREPY-INTEGRATION.md file.
+
+## Troubleshooting
+
+### API Key Issues
+
+If you see this message:
+```
+⚠️ WARNING: TOGETHER_API_KEY is not set. The API will run in mock mode.
+```
+
+It means your Together AI API key is not being properly passed to the container. Check your `.env` file and make sure the key is correct.
+
+### Container Issues
+
+If the container fails to start:
+
+1. Check logs with:
+   ```bash
+   docker-compose -f docker-compose.together.yml logs
+   ```
+
+2. Make sure the ports aren't already in use:
+   ```bash
+   sudo lsof -i :8000
+   ```
+
+### API Response Issues
+
+If you're getting mock responses instead of real ones:
+
+1. Check the server status to see if it's in mock mode:
+   ```
+   curl http://localhost:8000/
+   ```
+
+2. Verify your Together AI API key is valid and has not expired.
+
+## Advanced Configuration
+
+### Custom Models
+
+You can specify any model supported by Together AI by setting the `TOGETHER_MODEL` environment variable.
+
+### System Prompts
+
+The API includes custom system prompts for each game mode:
+- Battle Mode: Security-focused vault protection
+- Love Mode: AI assistant avoiding saying "I love you"
+- Mystery Mode: AI with a hidden secret
+- Raid Mode: Multi-layer security system
+
+You can customize these prompts by editing the `GAME_SYSTEM_PROMPTS` dictionary in `together_api.py`.

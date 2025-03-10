@@ -11,7 +11,11 @@ import logging
 import os
 import json
 import asyncio
-from src.connection_manager import ConnectionManager
+# Custom connection manager for Baultro with Sonic Blaze Testnet support
+try:
+    from src.connection_manager_baultro import ConnectionManager
+except ImportError:
+    from src.connection_manager import ConnectionManager
 from src.agent import ZerePyAgent
 from dotenv import load_dotenv
 
